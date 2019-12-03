@@ -278,8 +278,7 @@ init()
 
 channel = ''
 
-@asyncio.coroutine
-def task():
+async def task():
 	await client.wait_until_ready()
 
 	global channel
@@ -469,14 +468,12 @@ def task():
 		await asyncio.sleep(1) # task runs every 60 seconds
 
 #mp3 파일 생성함수(gTTS 이용, 남성목소리)
-@asyncio.coroutine
-def MakeSound(saveSTR, filename):
+async def MakeSound(saveSTR, filename):
 	tts = gTTS(saveSTR, lang = 'ko')
 	tts.save('./' + filename + '.mp3')
 
 #mp3 파일 재생함수	
-@asyncio.coroutine
-def PlaySound(voiceclient, filename):
+async def PlaySound(voiceclient, filename):
 	source = discord.FFmpegPCMAudio(filename)
 	try:
 		voiceclient.play(source)
@@ -489,8 +486,7 @@ def PlaySound(voiceclient, filename):
 	source.cleanup()
 
 #my_bot.db 저장하기
-@asyncio.coroutine
-def dbSave():
+async def dbSave():
 	global bossData
 	global bossNum
 	global bossTime
@@ -537,8 +533,7 @@ def dbSave():
 		pass
 
 #my_bot.db 불러오기
-@asyncio.coroutine
-def dbLoad():
+async def dbLoad():
 	global LoadChk
 	
 	contents1 = repo.get_contents("my_bot.db")
@@ -600,8 +595,7 @@ def dbLoad():
 		print ("보스타임 정보가 없습니다.")
 
 #고정보스 날짜저장
-@asyncio.coroutine
-def FixedBossDateSave():
+async def FixedBossDateSave():
 	global fixed_bossData
 	global fixed_bossTime
 	global fixed_bossNum
@@ -623,8 +617,7 @@ def FixedBossDateSave():
 	repo.update_file(contents.path, "bossDB", FixedBossDateDataSTR, contents.sha)
 
 #음성채널 입장
-@asyncio.coroutine
-def JointheVC(VCchannel, TXchannel):
+async def JointheVC(VCchannel, TXchannel):
 	global chkvoicechannel
 	global voice_client1
 
@@ -644,8 +637,7 @@ def JointheVC(VCchannel, TXchannel):
 		await TXchannel.send('음성채널에 먼저 들어가주세요.', tts=False)
 
 #사다리함수		
-@asyncio.coroutine
-def LadderFunc(number, ladderlist, channelVal):
+async def LadderFunc(number, ladderlist, channelVal):
 	if number < len(ladderlist):
 		result_ladder = random.sample(ladderlist, number)
 		result_ladderSTR = ','.join(map(str, result_ladder))
@@ -686,8 +678,7 @@ def handle_exit():
 
 # 봇이 구동되었을 때 동작되는 코드입니다.
 @client.event
-@asyncio.coroutine
-def on_ready():
+async def on_ready():
 	global task1
 	global channel
 	
@@ -753,8 +744,7 @@ def on_ready():
 while True:
 	# 봇이 새로운 메시지를 수신했을때 동작되는 코드입니다.
 	@client.event
-	@asyncio.coroutine
-	def on_message(msg):
+	async def on_message(msg):
 		if msg.author.bot: #만약 메시지를 보낸사람이 봇일 경우에는
 			return None #동작하지 않고 무시합니다.
 
