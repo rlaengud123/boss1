@@ -280,7 +280,7 @@ channel = ''
 
 @asyncio.coroutine
 def task():
-	yield from client.wait_until_ready()
+	await client.wait_until_ready()
 
 	global channel
 	global endTime
@@ -326,10 +326,10 @@ def task():
 	
 	if chflg == 1 : 
 		if voice_client1.is_connected() == False :
-			voice_client1 = yield from client.get_channel(basicSetting[6]).connect(reconnect=True)
+			voice_client1 = await client.get_channel(basicSetting[6]).connect(reconnect=True)
 			if voice_client1.is_connected() :
-				yield from dbLoad()
-				#yield from client.get_channel(channel).send( '<다시 왔습니다.!>', tts=False)
+				await dbLoad()
+				#await client.get_channel(channel).send( '<다시 왔습니다.!>', tts=False)
 				print("명치복구완료!")
 		
 	while not client.is_closed():
@@ -345,12 +345,12 @@ def task():
 					if bossMungFlag[i] == True:
 						bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
 						bossDateString[i] = tmp_bossTime[i].strftime('%Y-%m-%d')
-				yield from dbSave()
-				yield from FixedBossDateSave()
-				#yield from client.get_channel(channel).send('<갑자기 인사해도 놀라지마세요!>', tts=False)
+				await dbSave()
+				await FixedBossDateSave()
+				#await client.get_channel(channel).send('<갑자기 인사해도 놀라지마세요!>', tts=False)
 				print("보탐봇재시작!")
 				endTime = endTime + datetime.timedelta(days = int(basicSetting[13]))
-				yield from asyncio.sleep(2)
+				await asyncio.sleep(2)
 
 				inidata_restart = repo_restart.get_contents("restart.txt")
 				file_data_restart = base64.b64decode(inidata_restart.content)
@@ -371,16 +371,16 @@ def task():
 					if basicSetting[3] != '0':
 						if fixed_bossFlag0[i] == False:
 							fixed_bossFlag0[i] = True
-							yield from client.get_channel(channel).send("```" + fixed_bossData[i][0] + ' ' + basicSetting[3] + '분 전 ' + fixed_bossData[i][3] +' [' +  fixed_bossTime[i].strftime('%H:%M:%S') + ']```', tts=False)
-							yield from PlaySound(voice_client1, './sound/' + fixed_bossData[i][0] + '알림1.mp3')
+							await client.get_channel(channel).send("```" + fixed_bossData[i][0] + ' ' + basicSetting[3] + '분 전 ' + fixed_bossData[i][3] +' [' +  fixed_bossTime[i].strftime('%H:%M:%S') + ']```', tts=False)
+							await PlaySound(voice_client1, './sound/' + fixed_bossData[i][0] + '알림1.mp3')
 
 				################ before_alert ################ 
 				if fixed_bossTime[i] <= priv and fixed_bossTime[i] > now:
 					if basicSetting[1] != '0' :
 						if fixed_bossFlag[i] == False:
 							fixed_bossFlag[i] = True
-							yield from client.get_channel(channel).send("```" + fixed_bossData[i][0] + ' ' + basicSetting[1] + '분 전 ' + fixed_bossData[i][3] +' [' +  fixed_bossTime[i].strftime('%H:%M:%S') + ']```', tts=False)
-							yield from PlaySound(voice_client1, './sound/' + fixed_bossData[i][0] + '알림.mp3')
+							await client.get_channel(channel).send("```" + fixed_bossData[i][0] + ' ' + basicSetting[1] + '분 전 ' + fixed_bossData[i][3] +' [' +  fixed_bossTime[i].strftime('%H:%M:%S') + ']```', tts=False)
+							await PlaySound(voice_client1, './sound/' + fixed_bossData[i][0] + '알림.mp3')
 				
 				################ 보스 젠 시간 확인 ################
 				if fixed_bossTime[i] <= now :
@@ -391,8 +391,8 @@ def task():
 							description= "```" + fixed_bossData[i][0] + '탐 ' + fixed_bossData[i][4] + "```" ,
 							color=0x00ff00
 							)
-					yield from client.get_channel(channel).send(embed=embed, tts=False)
-					yield from PlaySound(voice_client1, './sound/' + fixed_bossData[i][0] + '젠.mp3')
+					await client.get_channel(channel).send(embed=embed, tts=False)
+					await PlaySound(voice_client1, './sound/' + fixed_bossData[i][0] + '젠.mp3')
 
 			################ 일반 보스 확인 ################ 
 			for i in range(bossNum):
@@ -401,16 +401,16 @@ def task():
 					if basicSetting[3] != '0':
 						if bossFlag0[i] == False:
 							bossFlag0[i] = True
-							yield from client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[3] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]```", tts=False)
-							yield from PlaySound(voice_client1, './sound/' + bossData[i][0] + '알림1.mp3')
+							await client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[3] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]```", tts=False)
+							await PlaySound(voice_client1, './sound/' + bossData[i][0] + '알림1.mp3')
 
 				################ before_alert ################
 				if bossTime[i] <= priv and bossTime[i] > now:
 					if basicSetting[1] != '0' :
 						if bossFlag[i] == False:
 							bossFlag[i] = True
-							yield from client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[1] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]```", tts=False)
-							yield from PlaySound(voice_client1, './sound/' + bossData[i][0] + '알림.mp3')
+							await client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[1] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]```", tts=False)
+							await PlaySound(voice_client1, './sound/' + bossData[i][0] + '알림.mp3')
 
 				################ 보스 젠 시간 확인 ################ 
 				if bossTime[i] <= now :
@@ -426,8 +426,8 @@ def task():
 							description= "```" + bossData[i][0] + '탐 ' + bossData[i][4] + "```" ,
 							color=0x00ff00
 							)
-					yield from client.get_channel(channel).send(embed=embed, tts=False)
-					yield from PlaySound(voice_client1, './sound/' + bossData[i][0] + '젠.mp3')
+					await client.get_channel(channel).send(embed=embed, tts=False)
+					await PlaySound(voice_client1, './sound/' + bossData[i][0] + '젠.mp3')
 
 				################ 보스 자동 멍 처리 ################ 
 				if bossMungFlag[i] == True:
@@ -435,8 +435,8 @@ def task():
 						if basicSetting[2] != '0':
 							################ 미입력 보스 ################
 							if bossData[i][2] == '0':
-								yield from client.get_channel(channel).send("```" +  bossData[i][0] + ' 미입력 됐습니다.```', tts=False)
-								yield from PlaySound(voice_client1, './sound/' + bossData[i][0] + '미입력.mp3')
+								await client.get_channel(channel).send("```" +  bossData[i][0] + ' 미입력 됐습니다.```', tts=False)
+								await PlaySound(voice_client1, './sound/' + bossData[i][0] + '미입력.mp3')
 								bossFlag[i] = False
 								bossFlag0[i] = False
 								bossMungFlag[i] = False
@@ -448,11 +448,11 @@ def task():
 									description= '```다음 ' + bossData[i][0] + ' ' + bossTimeString[i] + '입니다.```',
 									color=0xff0000
 									)
-								yield from client.get_channel(channel).send(embed=embed, tts=False)
+								await client.get_channel(channel).send(embed=embed, tts=False)
 							################ 멍 보스 ################
 							else :
-								yield from client.get_channel(channel).send("```" + bossData[i][0] + ' 멍 입니다.```')
-								yield from PlaySound(voice_client1, './sound/' + bossData[i][0] + '멍.mp3')
+								await client.get_channel(channel).send("```" + bossData[i][0] + ' 멍 입니다.```')
+								await PlaySound(voice_client1, './sound/' + bossData[i][0] + '멍.mp3')
 								bossFlag[i] = False
 								bossFlag0[i] = False
 								bossMungFlag[i] = False
@@ -464,9 +464,9 @@ def task():
 									description= '```다음 ' + bossData[i][0] + ' ' + bossTimeString[i] + '입니다.```',
 									color=0xff0000
 									)
-								yield from client.get_channel(channel).send(embed=embed, tts=False)
+								await client.get_channel(channel).send(embed=embed, tts=False)
 
-		yield from asyncio.sleep(1) # task runs every 60 seconds
+		await asyncio.sleep(1) # task runs every 60 seconds
 
 #mp3 파일 생성함수(gTTS 이용, 남성목소리)
 @asyncio.coroutine
@@ -482,9 +482,9 @@ def PlaySound(voiceclient, filename):
 		voiceclient.play(source)
 	except discord.errors.ClientException:
 		while voiceclient.is_playing():
-			yield from asyncio.sleep(1)
+			await asyncio.sleep(1)
 	while voiceclient.is_playing():
-		yield from asyncio.sleep(1)
+		await asyncio.sleep(1)
 	voiceclient.stop()
 	source.cleanup()
 
@@ -595,7 +595,7 @@ def dbLoad():
 		LoadChk = 0
 		print ("<불러오기 완료>")
 	else:
-		#yield from client.get_channel(channel).send('<보스타임 정보가 없습니다.>', tts=False)
+		#await client.get_channel(channel).send('<보스타임 정보가 없습니다.>', tts=False)
 		LoadChk = 1
 		print ("보스타임 정보가 없습니다.")
 
@@ -630,18 +630,18 @@ def JointheVC(VCchannel, TXchannel):
 
 	if VCchannel is not None:
 		if chkvoicechannel == 0:
-			voice_client1 = yield from VCchannel.connect(reconnect=True)
+			voice_client1 = await VCchannel.connect(reconnect=True)
 			if voice_client1.is_connected():
-				yield from voice_client1.disconnect()
-				voice_client1 = yield from VCchannel.connect(reconnect=True)
+				await voice_client1.disconnect()
+				voice_client1 = await VCchannel.connect(reconnect=True)
 			chkvoicechannel = 1
-			#yield from PlaySound(voice_client1, './sound/hello.mp3')
+			#await PlaySound(voice_client1, './sound/hello.mp3')
 		else :
-			yield from voice_client1.disconnect()
-			voice_client1 = yield from VCchannel.connect(reconnect=True)
-			#yield from PlaySound(voice_client1, './sound/hello.mp3')
+			await voice_client1.disconnect()
+			voice_client1 = await VCchannel.connect(reconnect=True)
+			#await PlaySound(voice_client1, './sound/hello.mp3')
 	else:
-		yield from TXchannel.send('음성채널에 먼저 들어가주세요.', tts=False)
+		await TXchannel.send('음성채널에 먼저 들어가주세요.', tts=False)
 
 #사다리함수		
 @asyncio.coroutine
@@ -654,9 +654,9 @@ def LadderFunc(number, ladderlist, channelVal):
 			description= '```' + result_ladderSTR + '```',
 			color=0xff00ff
 			)
-		yield from channelVal.send(embed=embed, tts=False)
+		await channelVal.send(embed=embed, tts=False)
 	else:
-		yield from channelVal.send('```추첨인원이 총 인원과 같거나 많습니다. 재입력 해주세요```', tts=False)
+		await channelVal.send('```추첨인원이 총 인원과 같거나 많습니다. 재입력 해주세요```', tts=False)
 
 ## 명치 예외처리	
 def handle_exit():
@@ -709,7 +709,7 @@ def on_ready():
 	print("===========")
 
 	
-	#yield from joinVoiceChannel()
+	#await joinVoiceChannel()
 	all_channels = client.get_all_channels()
 	
 	for channel1 in all_channels:
@@ -726,11 +726,11 @@ def on_ready():
 			channel_voice_name.append(str(channel_info[i].name))
 			channel_voice_id.append(str(channel_info[i].id))
 
-	yield from dbLoad()
+	await dbLoad()
 	
 	if basicSetting[6] != "" and basicSetting[7] != "" :
 		#print ('join channel')
-		yield from JointheVC(client.get_channel(basicSetting[6]), client.get_channel(basicSetting[7]))
+		await JointheVC(client.get_channel(basicSetting[6]), client.get_channel(basicSetting[7]))
 		channel = basicSetting[7]
 		chflg = 1
 
@@ -748,7 +748,7 @@ def on_ready():
 
 	# 디스코드에는 현재 본인이 어떤 게임을 플레이하는지 보여주는 기능이 있습니다.
 	# 이 기능을 사용하여 봇의 상태를 간단하게 출력해줄 수 있습니다.
-	yield from client.change_presence(status=discord.Status.dnd, activity=discord.Game(name="!메뉴", type=1), afk=False)
+	await client.change_presence(status=discord.Status.dnd, activity=discord.Game(name="!메뉴", type=1), afk=False)
 
 while True:
 	# 봇이 새로운 메시지를 수신했을때 동작되는 코드입니다.
@@ -831,7 +831,7 @@ while True:
 				
 			if basicSetting[6] != "":
 				#print ('join channel')
-				yield from JointheVC(client.get_channel(basicSetting[6]), channel)
+				await JointheVC(client.get_channel(basicSetting[6]), channel)
 				print('< 음성채널 [' + client.get_channel(basicSetting[6]).name + '] 접속완료>')
 
 			if int(basicSetting[13]) != 0 :
@@ -845,7 +845,7 @@ while True:
 			##### 사다리 채널바꾸기
 			if  basicSetting[8] != "":
 				if msg.channel.id == int(basicSetting[8]): #### 사다리 채널ID 값넣으면 됨
-					message = yield from msg.channel.fetch_message(msg.id)
+					message = await msg.channel.fetch_message(msg.id)
 					##################################
 
 					if message.content.startswith('!사다리'):
@@ -853,12 +853,12 @@ while True:
 						ladder = message.content[5:].split(" ")
 						num_cong = int(ladder[0])
 						del(ladder[0])
-						yield from LadderFunc(num_cong, ladder, msg.channel)
+						await LadderFunc(num_cong, ladder, msg.channel)
 			
 			##################################
 			if basicSetting[11] != "":
 				if msg.channel.id == int(basicSetting[11]) : #### 정산채널 채널ID 값넣으면 됨
-					message = yield from msg.channel.fetch_message(msg.id)
+					message = await msg.channel.fetch_message(msg.id)
 
 					################ 정산확인 ################ 
 
@@ -876,7 +876,7 @@ while True:
 									description= '```' + SearchID + ' 님이 받을 다이야는 ' + result + ' 다이야 입니다.```',
 									color=0xff00ff
 									)
-							yield from msg.channel.send(embed=embed, tts=False)
+							await msg.channel.send(embed=embed, tts=False)
 			
 				'''
 				################ 정산내역 ################ 
@@ -908,7 +908,7 @@ while True:
 							break
 
 					if len(Cell_ID) == 0 :
-						yield from msg.channel.send("정산한 다이야가 없습니다.", tts=False)
+						await msg.channel.send("정산한 다이야가 없습니다.", tts=False)
 					else:
 						result = wks.acell('F2').value
 
@@ -916,7 +916,7 @@ while True:
 						for i in range(len(Cell_ID)):
 							information += Cell_Date[i] + '  :  ' + str(Cell_Dia[i]) + ' 정산!\n'
 
-						#yield from client.get_channel(channel).send(SearchID + '님이 분배해야할 다이야는 ' + result + ' 다이야 입니다.', tts=False)
+						#await client.get_channel(channel).send(SearchID + '님이 분배해야할 다이야는 ' + result + ' 다이야 입니다.', tts=False)
 						embed = discord.Embed(
 								title = "----- 정 산 금 -----",
 								description= '총 '+ result + ' 다이야',
@@ -927,7 +927,7 @@ while True:
 								value=information,
 								inline = False
 								)
-						yield from msg.channel.send( embed=embed, tts=False)
+						await msg.channel.send( embed=embed, tts=False)
 						
 						wks.update_acell('E2', "")
 						
@@ -963,7 +963,7 @@ while True:
 							break
 
 					if len(Cell_ID) == 0 :
-						yield from msg.channel.send("지원 받은 다이야가 없습니다.", tts=False)
+						await msg.channel.send("지원 받은 다이야가 없습니다.", tts=False)
 					else:
 						result = wks.acell('F2').value
 
@@ -981,14 +981,14 @@ while True:
 								value=information,
 								inline = False
 								)
-						yield from msg.channel.send( embed=embed, tts=False)
+						await msg.channel.send( embed=embed, tts=False)
 						
 						wks.update_acell('E2', "")
 				##################################	
 				'''
 			#return None
 		else :
-			message = yield from client.get_channel(channel).fetch_message(msg.id)
+			message = await client.get_channel(channel).fetch_message(msg.id)
 			
 			################ 텍스트 정보확인 ################ 
 
@@ -1017,7 +1017,7 @@ while True:
 					value= '```' + ch_voice_information + '```',
 					inline = False
 					)
-				yield from client.get_channel(channel).send( embed=embed, tts=False)
+				await client.get_channel(channel).send( embed=embed, tts=False)
 
 			################ 텍스트채널이동 ################ 
 
@@ -1043,7 +1043,7 @@ while True:
 				contents = repo.get_contents("test_setting.ini")
 				repo.update_file(contents.path, "test_setting", result_textCH, contents.sha)
 					
-				yield from client.get_channel(channel).send('< ' + client.get_channel(channel).name + ' 이동완료>', tts=False)
+				await client.get_channel(channel).send('< ' + client.get_channel(channel).name + ' 이동완료>', tts=False)
 			
 			hello = message.content
 
@@ -1103,7 +1103,7 @@ while True:
 							description= '```다음 ' + bossData[i][0] + ' ' + bossTimeString[i] + '입니다.```',
 							color=0xff0000
 							)
-					yield from client.get_channel(channel).send(embed=embed, tts=False)
+					await client.get_channel(channel).send(embed=embed, tts=False)
 
 				################ 보스 멍 처리 ################ 
 
@@ -1156,7 +1156,7 @@ while True:
 								description= '```다음 ' + bossData[i][0] + ' ' + bossTimeString[i] + '입니다.```',
 								color=0xff0000
 								)
-						yield from client.get_channel(channel).send(embed=embed, tts=False)
+						await client.get_channel(channel).send(embed=embed, tts=False)
 					else:
 						if tmp_bossTime[i] < tmp_now :
 
@@ -1175,9 +1175,9 @@ while True:
 									description= '```다음 ' + bossData[i][0] + ' ' + bossTimeString[i] + '입니다.```',
 									color=0xff0000
 									)
-							yield from client.get_channel(channel).send(embed=embed, tts=False)
+							await client.get_channel(channel).send(embed=embed, tts=False)
 						else:
-							yield from client.get_channel(channel).send('```' + bossData[i][0] + '탐이 아직 안됐습니다. 다음 ' + bossData[i][0] + '탐 [' + tmp_bossTimeString[i] + '] 입니다```', tts=False)
+							await client.get_channel(channel).send('```' + bossData[i][0] + '탐이 아직 안됐습니다. 다음 ' + bossData[i][0] + '탐 [' + tmp_bossTimeString[i] + '] 입니다```', tts=False)
 
 					
 			################ 예상 보스 타임 입력 ################ 
@@ -1221,9 +1221,9 @@ while True:
 								description= '```다음 ' + bossData[i][0] + ' ' + bossTimeString[i] + '입니다.```',
 								color=0xff0000
 								)
-						yield from client.get_channel(channel).send(embed=embed, tts=False)
+						await client.get_channel(channel).send(embed=embed, tts=False)
 					else:
-						yield from client.get_channel(channel).send('```' + bossData[i][0] +' 예상 시간을 입력해주세요.```', tts=False)
+						await client.get_channel(channel).send('```' + bossData[i][0] +' 예상 시간을 입력해주세요.```', tts=False)
 						
 				################ 보스타임 삭제 ################
 					
@@ -1238,18 +1238,18 @@ while True:
 					bossFlag0[i] = (False)
 					bossMungFlag[i] = (False)
 					bossMungCnt[i] = 0
-					yield from client.get_channel(channel).send('<' + bossData[i][0] + ' 삭제완료>', tts=False)
-					yield from dbSave()
+					await client.get_channel(channel).send('<' + bossData[i][0] + ' 삭제완료>', tts=False)
+					await dbSave()
 					print ('<' + bossData[i][0] + ' 삭제완료>')
 				
 			################ ?????????????? ################ 
 
 			if message.content == '!오빠':
-				yield from PlaySound(voice_client1, './sound/오빠.mp3')
+				await PlaySound(voice_client1, './sound/오빠.mp3')
 			if message.content == '!언니':
-				yield from PlaySound(voice_client1, './sound/언니.mp3')
+				await PlaySound(voice_client1, './sound/언니.mp3')
 			if message.content == '!형':
-				yield from PlaySound(voice_client1, './sound/형.mp3')
+				await PlaySound(voice_client1, './sound/형.mp3')
 
 			################ 분배 결과 출력 ################ 
 
@@ -1261,9 +1261,9 @@ while True:
 				real_money = int(int(separate_money[1]) - cal_tax1)
 				cal_tax2 = int(real_money/num_sep) - math.ceil(float(int(real_money/num_sep))*0.95)
 				if num_sep == 0 :
-					yield from client.get_channel(channel).send('```분배 인원이 0입니다. 재입력 해주세요.```', tts=False)
+					await client.get_channel(channel).send('```분배 인원이 0입니다. 재입력 해주세요.```', tts=False)
 				else :
-					yield from client.get_channel(channel).send('```1차세금 : ' + str(cal_tax1) + '\n1차 수령액 : ' + str(real_money) + '\n분배자 거래소등록금액 : ' + str(int(real_money/num_sep)) + '\n2차세금 : ' + str(cal_tax2) + '\n인당 실수령액 : ' + str(int(float(int(real_money/num_sep))*0.95)) + '```', tts=False)
+					await client.get_channel(channel).send('```1차세금 : ' + str(cal_tax1) + '\n1차 수령액 : ' + str(real_money) + '\n분배자 거래소등록금액 : ' + str(int(real_money/num_sep)) + '\n2차세금 : ' + str(cal_tax2) + '\n인당 실수령액 : ' + str(int(float(int(real_money/num_sep))*0.95)) + '```', tts=False)
 
 			################ 사다리 결과 출력 ################ 
 
@@ -1272,7 +1272,7 @@ while True:
 				ladder = message.content[5:].split(" ")
 				num_cong = int(ladder[0])
 				del(ladder[0])
-				yield from LadderFunc(num_cong, ladder, client.get_channel(channel))
+				await LadderFunc(num_cong, ladder, client.get_channel(channel))
 				
 			################ 보탐봇 메뉴 출력 ################
 			
@@ -1286,7 +1286,7 @@ while True:
 						name="----- 추가기능 -----",
 						value= '(보스명)컷/멍/예상  (할말) : 보스시간 입력 후 빈칸 두번!! 메모 가능'
 						)
-				yield from client.get_channel(channel).send(embed=embed, tts=False)
+				await client.get_channel(channel).send(embed=embed, tts=False)
 
 			################ 미예약 보스타임 출력 ################ 
 
@@ -1307,16 +1307,16 @@ while True:
 						description= temp_bossTimeSTR1,
 						color=0x0000ff
 						)
-				yield from client.get_channel(channel).send( embed=embed, tts=False)
+				await client.get_channel(channel).send( embed=embed, tts=False)
 
 			################ 음성파일 생성 후 재생 ################ 			
 				
 			if message.content.startswith('!v') or message.content.startswith('!ㅍ') or message.content.startswith('!V'):
 				tmp_sayMessage = message.content
 				sayMessage = tmp_sayMessage[3:]
-				yield from MakeSound(message.author.display_name +'님이.' + sayMessage, './sound/say')
-				yield from client.get_channel(channel).send("```< " + msg.author.display_name + " >님이 \"" + sayMessage + "\"```", tts=False)
-				yield from PlaySound(voice_client1, './sound/say.mp3')
+				await MakeSound(message.author.display_name +'님이.' + sayMessage, './sound/say')
+				await client.get_channel(channel).send("```< " + msg.author.display_name + " >님이 \"" + sayMessage + "\"```", tts=False)
+				await PlaySound(voice_client1, './sound/say.mp3')
 
 			################ 보탐봇 재시작 ################ 
 
@@ -1325,11 +1325,11 @@ while True:
 					if bossMungFlag[i] == True:
 						bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
 						bossDateString[i] = tmp_bossTime[i].strftime('%Y-%m-%d')
-				yield from dbSave()
-				yield from FixedBossDateSave()
-				#yield from client.get_channel(channel).send('<보탐봇 재시작 중... 갑자기 인사해도 놀라지마세요!>', tts=False)
+				await dbSave()
+				await FixedBossDateSave()
+				#await client.get_channel(channel).send('<보탐봇 재시작 중... 갑자기 인사해도 놀라지마세요!>', tts=False)
 				print("보탐봇강제재시작!")
-				yield from asyncio.sleep(2)
+				await asyncio.sleep(2)
 
 				inidata_restart = repo_restart.get_contents("restart.txt")
 				file_data_restart = base64.b64decode(inidata_restart.content)
@@ -1347,7 +1347,7 @@ while True:
 
 			if message.content == '!소환':
 				if message.author.voice == None:
-					yield from client.get_channel(channel).send('음성채널에 먼저 들어가주세요.', tts=False)
+					await client.get_channel(channel).send('음성채널에 먼저 들어가주세요.', tts=False)
 				else:
 					voice_channel = message.author.voice.channel
 
@@ -1383,8 +1383,8 @@ while True:
 						contents = repo.get_contents("test_setting.ini")
 						repo.update_file(contents.path, "test_setting", result_voiceCH, contents.sha)
 
-					yield from JointheVC(voice_channel, channel)
-					yield from client.get_channel(channel).send('< 음성채널 [' + client.get_channel(voice_channel.id).name + '] 접속완료>', tts=False)
+					await JointheVC(voice_channel, channel)
+					await client.get_channel(channel).send('< 음성채널 [' + client.get_channel(voice_channel.id).name + '] 접속완료>', tts=False)
 			
 			################ 저장된 정보 초기화 ################
 						
@@ -1415,9 +1415,9 @@ while True:
 				
 				init()
 
-				yield from dbSave()
+				await dbSave()
 
-				yield from client.get_channel(channel).send('<초기화 완료>', tts=False)
+				await client.get_channel(channel).send('<초기화 완료>', tts=False)
 				print ("<초기화 완료>")
 
 			################ 보스타임 일괄 설정 ################
@@ -1466,11 +1466,11 @@ while True:
 					tmp_bossTimeString[i] = bossTimeString[i] = nextTime.strftime('%H:%M:%S')
 					tmp_bossDateString[i] = bossDateString[i] = nextTime.strftime('%Y-%m-%d')
 
-				yield from dbSave()
-				yield from dbLoad()
-				yield from dbSave()
+				await dbSave()
+				await dbLoad()
+				await dbSave()
 				
-				yield from client.get_channel(channel).send('<보스 일괄 입력 완료>', tts=False)
+				await client.get_channel(channel).send('<보스 일괄 입력 완료>', tts=False)
 				print ("<보스 일괄 입력 완료>")
 
 			################ 보탐봇 기본 설정확인 ################ 
@@ -1490,17 +1490,17 @@ while True:
 						description= '```' + setting_val + '```',
 						color=0xff00ff
 						)
-				yield from client.get_channel(channel).send(embed=embed, tts=False)
+				await client.get_channel(channel).send(embed=embed, tts=False)
 
 			################ my_bot.db에 저장된 보스타임 불러오기 ################
 
 			if message.content == '!불러오기' :
-				yield from dbLoad()
+				await dbLoad()
 
 				if LoadChk == 0:
-					yield from client.get_channel(channel).send('<불러오기 완료>', tts=False)
+					await client.get_channel(channel).send('<불러오기 완료>', tts=False)
 				else:
-					yield from client.get_channel(channel).send('<보스타임 정보가 없습니다.>', tts=False)
+					await client.get_channel(channel).send('<보스타임 정보가 없습니다.>', tts=False)
 			
 			################ 가장 근접한 보스타임 출력 ################ 
 			
@@ -1547,7 +1547,7 @@ while True:
 						sorted_datelist.append(tmp_sorted_datelist[i])
 				
 				if len(sorted_datelist) == 0:
-					yield from client.get_channel(channel).send( '<보스타임 정보가 없습니다.>', tts=False)
+					await client.get_channel(channel).send( '<보스타임 정보가 없습니다.>', tts=False)
 				else : 
 					result_lefttime = ''
 					
@@ -1577,7 +1577,7 @@ while True:
 						description= result_lefttime,
 						color=0xff0000
 						)
-					yield from client.get_channel(channel).send( embed=embed, tts=False)
+					await client.get_channel(channel).send( embed=embed, tts=False)
 
 			################ 보스타임 출력 ################ 
 
@@ -1668,9 +1668,9 @@ while True:
 						inline = False
 						)
 				
-				yield from client.get_channel(channel).send( embed=embed, tts=False)
+				await client.get_channel(channel).send( embed=embed, tts=False)
 
-				yield from dbSave()
+				await dbSave()
 
 			################ 보스타임 출력(고정보스포함) ################ 
 
@@ -1777,15 +1777,15 @@ while True:
 						inline = False
 						)
 				
-				yield from client.get_channel(channel).send( embed=embed, tts=False)
+				await client.get_channel(channel).send( embed=embed, tts=False)
 
-				yield from dbSave()
+				await dbSave()
 
 			################ 현재시간 확인 ################ 
 
 			if message.content == '!현재시간' :
 				now3 = datetime.datetime.now() + datetime.timedelta(hours = int(basicSetting[0]))
-				yield from client.get_channel(channel).send(now3.strftime('%Y-%m-%d') + '   ' + now3.strftime('%H:%M:%S'), tts=False)
+				await client.get_channel(channel).send(now3.strftime('%Y-%m-%d') + '   ' + now3.strftime('%H:%M:%S'), tts=False)
 
 			################ 리젠시간 출력 ################
 			
@@ -1802,12 +1802,12 @@ while True:
 				embed.add_field(name='6시간 53분', value='피닉스', inline=False)
 				embed.add_field(name='7시간', value='데스나이트', inline=False)
 				embed.add_field(name='10시간', value='커츠, 리칸트', inline=False)
-				yield from client.get_channel(channel).send(embed=embed, tts=False)
+				await client.get_channel(channel).send(embed=embed, tts=False)
 
 			################ 명존쎄 ################ 
 
 			if message.content == '!명치':
-				#yield from client.get_channel(channel).send( '<보탐봇 명치 맞고 숨 고르기 중! 잠시만요!>', tts=False)
+				#await client.get_channel(channel).send( '<보탐봇 명치 맞고 숨 고르기 중! 잠시만요!>', tts=False)
 				for i in range(bossNum):
 					if bossMungFlag[i] == True:
 						bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
@@ -1815,9 +1815,9 @@ while True:
 						bossFlag[i] = False
 						bossFlag0[i] = False
 						bossMungFlag[i] = False					
-				yield from dbSave()
+				await dbSave()
 				print("명치!")
-				yield from voice_client1.disconnect()
+				await voice_client1.disconnect()
 				#client.clear()
 				raise SystemExit
 
@@ -1837,7 +1837,7 @@ while True:
 							description= '```' + SearchID + ' 님이 받을 다이야는 ' + result + ' 다이야 입니다.```',
 							color=0xff00ff
 							)
-					yield from msg.channel.send(embed=embed, tts=False)
+					await msg.channel.send(embed=embed, tts=False)
 				'''
 				SearchID = hello[4:]
 				gc = gspread.authorize(credentials)
@@ -1853,9 +1853,9 @@ while True:
 							description= '```' + SearchID + ' 님이 받을 다이야는 ' + result + ' 다이야 입니다.```',
 							color=0xff00ff
 							)
-					yield from msg.channel.send(embed=embed, tts=False)
+					await msg.channel.send(embed=embed, tts=False)
 				else :
-					yield from msg.channel.send("해당 아이디가 없습니다.", tts=False)
+					await msg.channel.send("해당 아이디가 없습니다.", tts=False)
 				'''
 					
 			'''
@@ -1888,7 +1888,7 @@ while True:
 						break
 
 				if len(Cell_ID) == 0 :
-					yield from msg.channel.send("정산한 다이야가 없습니다.", tts=False)
+					await msg.channel.send("정산한 다이야가 없습니다.", tts=False)
 				else:
 					result = wks.acell('F2').value
 
@@ -1896,7 +1896,7 @@ while True:
 					for i in range(len(Cell_ID)):
 						information += Cell_Date[i] + '  :  ' + str(Cell_Dia[i]) + ' 정산!\n'
 
-					#yield from client.get_channel(channel).send(SearchID + '님이 분배해야할 다이야는 ' + result + ' 다이야 입니다.', tts=False)
+					#await client.get_channel(channel).send(SearchID + '님이 분배해야할 다이야는 ' + result + ' 다이야 입니다.', tts=False)
 					embed = discord.Embed(
 							title = "----- 정 산 금 -----",
 							description= '총 '+ result + ' 다이야',
@@ -1907,7 +1907,7 @@ while True:
 							value=information,
 							inline = False
 							)
-					yield from client.get_channel(channel).send(embed=embed, tts=False)
+					await client.get_channel(channel).send(embed=embed, tts=False)
 					wks.update_acell('E2', "")
 
 			################ 지원내역 ################ 
@@ -1942,7 +1942,7 @@ while True:
 						break
 
 				if len(Cell_ID) == 0 :
-					yield from msg.channel.send("지원 받은 다이야가 없습니다.", tts=False)
+					await msg.channel.send("지원 받은 다이야가 없습니다.", tts=False)
 				else:
 					result = wks.acell('F2').value
 
@@ -1960,7 +1960,7 @@ while True:
 							value=information,
 							inline = False
 							)
-					yield from client.get_channel(channel).send(embed=embed, tts=False)
+					await client.get_channel(channel).send(embed=embed, tts=False)
 					wks.update_acell('E2', "")
 			'''
 	client.loop.create_task(task())
