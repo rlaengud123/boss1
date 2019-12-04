@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 
-################ V8 #####################
+################ V2 #####################
 
 import os
 import sys
@@ -116,6 +116,8 @@ def init():
 	global gc #정산
 	global credentials #정산
 	
+	global regenembed
+
 	tmp_bossData = []
 	tmp_fixed_bossData = []
 	FixedBossDateData = []
@@ -269,6 +271,42 @@ def init():
 		if fixed_bossTime[j] < tmp_fixed_now :
 			while fixed_bossTime[j] < tmp_fixed_now :
 				fixed_bossTime[j] = fixed_bossTime[j] + datetime.timedelta(hours=int(fixed_bossData[j][5]), minutes=int(fixed_bossData[j][6]), seconds = int(0))
+	
+	################# 리젠보스 시간 정렬 ######################
+	regenData = []
+	regenTime = []
+	regenbossName = []
+	outputTimeHour = []
+	outputTimeMin = []
+
+	for i in range(bossNum):
+		f.append(bossData[i][0])
+		f.append(bossData[i][1] + bossData[i][5])
+		regenData.append(f)
+		regenTime.append(bossData[i][1] + bossData[i][5])
+		f = []
+		
+	regenTime = sorted(list(set(regenTime)))
+	
+	for j in range(len(regenTime)):
+		for i in range(len(regenData)):
+			if regenTime[j] == regenData[i][1] :
+				f.append(regenData[i][0])
+		regenbossName.append(f)
+		outputTimeHour.append(int(regenTime[j][:2]))
+		outputTimeMin.append(int(regenTime[j][2:]))
+		f = []
+
+	regenembed = discord.Embed(
+			title='----- 리스폰 보스 -----',
+			description= ' ')
+	for i in range(len(regenTime)):
+		if outputTimeMin[i] == 0 :
+			regenembed.add_field(name=str(outputTimeHour[i]) + '시간', value= '```'+ ', '.join(map(str, sorted(regenbossName[i]))) + '```', inline=False)
+		else :
+			regenembed.add_field(name=str(outputTimeHour[i]) + '시간' + str(outputTimeMin[i]) + '분', value= '```' + ','.join(map(str, sorted(regenbossName[i]))) + '```', inline=False)
+	
+	##########################################################
 
 	if basicSetting[10] !="":
 		scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'] #정산
@@ -328,7 +366,7 @@ async def task():
 			voice_client1 = await client.get_channel(basicSetting[6]).connect(reconnect=True)
 			if voice_client1.is_connected() :
 				await dbLoad()
-				#await client.get_channel(channel).send( '<다시 왔습니다.!>', tts=False)
+				await client.get_channel(channel).send( '< 다시 왔습니다! >', tts=False)
 				print("명치복구완료!")
 		
 	while not client.is_closed():
@@ -340,10 +378,11 @@ async def task():
 		if channel != '':			
 			################ 보탐봇 재시작 ################ 
 			if endTime.strftime('%Y-%m-%d ') + endTime.strftime('%H:%M:%S') == now.strftime('%Y-%m-%d ') + now.strftime('%H:%M:%S'):
-				for i in range(bossNum):
-					if bossMungFlag[i] == True:
-						bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
-						bossDateString[i] = tmp_bossTime[i].strftime('%Y-%m-%d')
+				if basicSetting[2] != '0':
+					for i in range(bossNum):
+						if bossMungFlag[i] == True:
+							bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
+							bossDateString[i] = tmp_bossTime[i].strftime('%Y-%m-%d')
 				await dbSave()
 				await FixedBossDateSave()
 				#await client.get_channel(channel).send('<갑자기 인사해도 놀라지마세요!>', tts=False)
@@ -400,7 +439,10 @@ async def task():
 					if basicSetting[3] != '0':
 						if bossFlag0[i] == False:
 							bossFlag0[i] = True
-							await client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[3] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]```", tts=False)
+							if bossData[i][6] != '' :
+								await client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[3] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]" + '\n<' + bossData[i][6] + '>```', tts=False)
+							else :
+								await client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[3] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]```", tts=False)
 							await PlaySound(voice_client1, './sound/' + bossData[i][0] + '알림1.mp3')
 
 				################ before_alert ################
@@ -408,7 +450,10 @@ async def task():
 					if basicSetting[1] != '0' :
 						if bossFlag[i] == False:
 							bossFlag[i] = True
-							await client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[1] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]```", tts=False)
+							if bossData[i][6] != '' :
+								await client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[1] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]" + '\n<' + bossData[i][6] + '>```', tts=False)
+							else :
+								await client.get_channel(channel).send("```" + bossData[i][0] + ' ' + basicSetting[1] + '분 전 ' + bossData[i][3] + " [" +  bossTimeString[i] + "]```", tts=False)
 							await PlaySound(voice_client1, './sound/' + bossData[i][0] + '알림.mp3')
 
 				################ 보스 젠 시간 확인 ################ 
@@ -421,10 +466,16 @@ async def task():
 					bossTimeString[i] = '99:99:99'
 					bossDateString[i] = '9999-99-99'
 					bossTime[i] = now+datetime.timedelta(days=365)
-					embed = discord.Embed(
-							description= "```" + bossData[i][0] + '탐 ' + bossData[i][4] + "```" ,
-							color=0x00ff00
-							)
+					if bossData[i][6] != '' :
+						embed = discord.Embed(
+								description= "```" + bossData[i][0] + '탐 ' + bossData[i][4] + '\n<' + bossData[i][6] + '>```' ,
+								color=0x00ff00
+								)
+					else :
+						embed = discord.Embed(
+								description= "```" + bossData[i][0] + '탐 ' + bossData[i][4] + "```" ,
+								color=0x00ff00
+								)
 					await client.get_channel(channel).send(embed=embed, tts=False)
 					await PlaySound(voice_client1, './sound/' + bossData[i][0] + '젠.mp3')
 
@@ -793,6 +844,8 @@ while True:
 		
 		global gc #정산
 		global credentials	#정산
+
+		global regenembed
 		
 		id = msg.author.id #id라는 변수에는 메시지를 보낸사람의 ID를 담습니다.
 		
@@ -867,116 +920,6 @@ while True:
 									color=0xff00ff
 									)
 							await msg.channel.send(embed=embed, tts=False)
-			
-				'''
-				################ 정산내역 ################ 
-
-				if message.content.startswith('!정산내역'):
-					SearchID = message.content[6:]
-					gc = gspread.authorize(credentials)
-					wks = gc.open(basicSetting[12]).worksheet("정산내역")
-
-					Cell_ID = []
-					Cell_Dia = []
-					Cell_Date = []
-
-
-					i = 0
-
-					wks.update_acell('E2', SearchID)
-
-					cell_Date_list = wks.range('B6:B3000')
-					cell_ID_list = wks.range('C6:C3000')
-					cell_Dia_list = wks.range('D6:D1000')
-
-					for i in range(len(cell_ID_list)):
-						if cell_ID_list[i].value != '':
-							Cell_Date.append(cell_Date_list[i].value)
-							Cell_ID.append(cell_ID_list[i].value)
-							Cell_Dia.append(cell_Dia_list[i].value)
-						else:
-							break
-
-					if len(Cell_ID) == 0 :
-						await msg.channel.send("정산한 다이야가 없습니다.", tts=False)
-					else:
-						result = wks.acell('F2').value
-
-						information = ''
-						for i in range(len(Cell_ID)):
-							information += Cell_Date[i] + '  :  ' + str(Cell_Dia[i]) + ' 정산!\n'
-
-						#await client.get_channel(channel).send(SearchID + '님이 분배해야할 다이야는 ' + result + ' 다이야 입니다.', tts=False)
-						embed = discord.Embed(
-								title = "----- 정 산 금 -----",
-								description= '총 '+ result + ' 다이야',
-								color=0xff00ff
-								)
-						embed.add_field(
-								name="----- 정산내역 -----",
-								value=information,
-								inline = False
-								)
-						await msg.channel.send( embed=embed, tts=False)
-						
-						wks.update_acell('E2', "")
-						
-				################ 지원내역 ################ 
-				
-				if message.content.startswith('!지원내역'):
-					SearchID = message.content[6:]
-					gc = gspread.authorize(credentials)
-					wks = gc.open(basicSetting[12]).worksheet("지원내역")
-
-					Cell_ID = []
-					Cell_Dia = []
-					Cell_Date = []
-					Cell_Cus = []
-
-
-					i = 0
-
-					wks.update_acell('E2', SearchID)
-
-					cell_Date_list = wks.range('B6:B3000')
-					cell_ID_list = wks.range('C6:C3000')
-					cell_Dia_list = wks.range('D6:D1000')
-					cell_Cus_list = wks.range('E6:E1000')
-
-					for i in range(len(cell_ID_list)):
-						if cell_ID_list[i].value != '':
-							Cell_Date.append(cell_Date_list[i].value)
-							Cell_ID.append(cell_ID_list[i].value)
-							Cell_Dia.append(cell_Dia_list[i].value)
-							Cell_Cus.append(cell_Cus_list[i].value)
-						else:
-							break
-
-					if len(Cell_ID) == 0 :
-						await msg.channel.send("지원 받은 다이야가 없습니다.", tts=False)
-					else:
-						result = wks.acell('F2').value
-
-						information = ''
-						for i in range(len(Cell_ID)):
-							information += Cell_Date[i] + '  :  ' + str(Cell_Dia[i]) + '  ' + Cell_Cus[i] +' 지원!\n'
-
-						embed = discord.Embed(
-								title = "----- 지 원 금 -----",
-								description= '총 '+ result + ' 다이야',
-								color=0xff00ff
-								)
-						embed.add_field(
-								name="----- 지원내역 -----",
-								value=information,
-								inline = False
-								)
-						await msg.channel.send( embed=embed, tts=False)
-						
-						wks.update_acell('E2', "")
-				##################################	
-				'''
-			#return None
 		else :
 			message = await client.get_channel(channel).fetch_message(msg.id)
 			
@@ -1232,14 +1175,27 @@ while True:
 					await dbSave()
 					print ('<' + bossData[i][0] + ' 삭제완료>')
 				
+				################ 보스별 메모 ################ 
+
+				if message.content.startswith(bossData[i][0] +'메모 '):
+					
+					tmp_msg = bossData[i][0] +'메모 '
+					
+					bossData[i][6] = hello[len(tmp_msg):]
+					await client.get_channel(channel).send('< ' + bossData[i][0] + ' [ ' + bossData[i][6] + ' ] 메모등록 완료>', tts=False)
+
 			################ ?????????????? ################ 
 
-			if message.content == '!오빠':
+			if message.content == '!오빠' :
 				await PlaySound(voice_client1, './sound/오빠.mp3')
-			if message.content == '!언니':
+			if message.content == '!언니' :
 				await PlaySound(voice_client1, './sound/언니.mp3')
-			if message.content == '!형':
+			if message.content == '!형' :
 				await PlaySound(voice_client1, './sound/형.mp3')
+			if message.content == '!TJ' or message.content == '!tj' :
+				resultTJ = random.randrange(1,9)
+				await PlaySound(voice_client1, './sound/TJ' + str(resultTJ) +'.mp3')
+
 
 			################ 분배 결과 출력 ################ 
 
@@ -1269,7 +1225,7 @@ while True:
 			if message.content == '!메뉴':
 				embed = discord.Embed(
 						title = "----- 메뉴 -----",
-						description= '```!현재시간\n!채널확인\n!채널이동 [채널명]\n!소환\n!불러오기\n!초기화\n!재시작\n!명치\n!미예약\n!분배 [인원] [금액]\n!사다리 [뽑을인원수] [아이디1] [아이디2] ...\n!보스일괄 00:00 또는 !보스일괄 0000\n!ㅂ,ㅃ,q\n\n[보스명]컷\n[보스명]컷 00:00 또는 [보스명]컷 0000\n[보스명]멍\n[보스명]멍 00:00 또는 [보스명]멍 0000\n[보스명]예상 00:00 또는 [보스명]예상 0000\n[보스명]삭제\n보스탐\n!보스탐\n!리젠```',
+						description= '```!현재시간\n!채널확인\n!채널이동 [채널명]\n!소환\n!불러오기\n!초기화\n!재시작\n!명치\n!미예약\n!공지\n!공지 (할말)\n!공지삭제\n!상태 (할말)\n!분배 [인원] [금액]\n!사다리 [뽑을인원수] [아이디1] [아이디2] ...\n!보스일괄 00:00 또는 !보스일괄 0000\n!ㅂ,ㅃ,q\n\n[보스명]컷\n[보스명]컷 00:00 또는 [보스명]컷 0000\n[보스명]멍\n[보스명]멍 00:00 또는 [보스명]멍 0000\n[보스명]예상 00:00 또는 [보스명]예상 0000\n[보스명]메모 (할말)\n[보스명]삭제\n보스탐\n!보스탐\n!리젠```',
 						color=0xff00ff
 						)
 				embed.add_field(
@@ -1311,10 +1267,11 @@ while True:
 			################ 보탐봇 재시작 ################ 
 
 			if message.content == '!재시작' :
-				for i in range(bossNum):
-					if bossMungFlag[i] == True:
-						bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
-						bossDateString[i] = tmp_bossTime[i].strftime('%Y-%m-%d')
+				if basicSetting[2] != '0':
+					for i in range(bossNum):
+						if bossMungFlag[i] == True:
+							bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
+							bossDateString[i] = tmp_bossTime[i].strftime('%Y-%m-%d')
 				await dbSave()
 				await FixedBossDateSave()
 				#await client.get_channel(channel).send('<보탐봇 재시작 중... 갑자기 인사해도 놀라지마세요!>', tts=False)
@@ -1780,24 +1737,12 @@ while True:
 			################ 리젠시간 출력 ################
 			
 			if message.content == '!리젠' :
-				embed = discord.Embed(
-						title='----- 리스폰 보스 -----',
-						description= ' ')
-				embed.add_field(name='1시간', value='기감', inline=False)
-				embed.add_field(name='2시간', value='서드,북드,카파,질풍,광풍,이프,자웜,개미', inline=False)
-				embed.add_field(name='3시간', value='중드,동드,거드,마요,산적,자크,스피,가스트,대흑장로', inline=False)
-				embed.add_field(name='4시간', value='아르,도펠', inline=False)
-				embed.add_field(name='5시간', value='에자', inline=False)
-				embed.add_field(name='6시간', value='감시자 데몬', inline=False)
-				embed.add_field(name='6시간 53분', value='피닉스', inline=False)
-				embed.add_field(name='7시간', value='데스나이트', inline=False)
-				embed.add_field(name='10시간', value='커츠, 리칸트', inline=False)
-				await client.get_channel(channel).send(embed=embed, tts=False)
+				await client.get_channel(channel).send(embed=regenembed, tts=False)
 
 			################ 명존쎄 ################ 
 
 			if message.content == '!명치':
-				#await client.get_channel(channel).send( '<보탐봇 명치 맞고 숨 고르기 중! 잠시만요!>', tts=False)
+				await client.get_channel(channel).send( '< 보탐봇 명치 맞고 숨 고르기 중! 잠시만요! >', tts=False)
 				for i in range(bossNum):
 					if bossMungFlag[i] == True:
 						bossTimeString[i] = tmp_bossTime[i].strftime('%H:%M:%S')
@@ -1810,6 +1755,45 @@ while True:
 				await voice_client1.disconnect()
 				#client.clear()
 				raise SystemExit
+
+			################ 상태메세지변경 ################ 
+
+			if message.content.startswith('!상태 '):
+				tmp_sayMessage = message.content
+				sayMessage = tmp_sayMessage[4:]
+				await client.change_presence(status=discord.Status.dnd, activity=discord.Game(name=sayMessage, type=1), afk = False)
+				await client.get_channel(channel).send( '< 상태메세지 변경완료 >', tts=False)
+
+			################ 공지확인, 입력 및 삭제 ################ 
+
+			if message.content == '!공지':
+				notice_initdata = repo.get_contents("notice.ini")
+				notice = base64.b64decode(notice_initdata.content)
+				notice = notice.decode('utf-8')
+				if notice != '' :
+					embed = discord.Embed(
+							description= str(notice),
+							color=0xff00ff
+							)
+				else :
+					embed = discord.Embed(
+							description= '등록된 공지가 없습니다.',
+							color=0xff00ff
+							)
+				await msg.channel.send(embed=embed, tts=False)
+
+			if message.content.startswith('!공지 '):
+				tmp_sayMessage = message.content
+				sayMessage = tmp_sayMessage[4:]
+				contents = repo.get_contents("notice.ini")
+				repo.update_file(contents.path, "notice 등록", sayMessage, contents.sha)
+				await client.get_channel(channel).send( '< 공지 등록완료 >', tts=False)
+			
+			if message.content == '!공지삭제':
+				contents = repo.get_contents("notice.ini")
+				repo.update_file(contents.path, "notice 삭제", '', contents.sha)
+				await client.get_channel(channel).send( '< 공지 삭제완료 >', tts=False)
+
 
 			################ 정산확인 ################ 
 
@@ -1828,131 +1812,7 @@ while True:
 							color=0xff00ff
 							)
 					await msg.channel.send(embed=embed, tts=False)
-				'''
-				SearchID = hello[4:]
-				gc = gspread.authorize(credentials)
-				wks = gc.open(basicSetting[12]).worksheet("최종수령내역")  #정산결과 시트이름
 
-				wks.update_acell('E2', SearchID) 
-
-				result = wks.acell('F2').value
-				result_ID = wks.acell('E4').value
-
-				if result_ID == "" :
-					embed = discord.Embed(
-							description= '```' + SearchID + ' 님이 받을 다이야는 ' + result + ' 다이야 입니다.```',
-							color=0xff00ff
-							)
-					await msg.channel.send(embed=embed, tts=False)
-				else :
-					await msg.channel.send("해당 아이디가 없습니다.", tts=False)
-				'''
-					
-			'''
-			################ 정산내역 ################ 
-
-			if message.content.startswith('!정산내역'):
-				SearchID = hello[6:]
-				gc = gspread.authorize(credentials)
-				wks = gc.open(basicSetting[12]).worksheet("정산내역")
-
-				Cell_ID = []
-				Cell_Dia = []
-				Cell_Date = []
-
-
-				i = 0
-
-				wks.update_acell('E2', SearchID)
-
-				cell_Date_list = wks.range('B6:B3000')
-				cell_ID_list = wks.range('C6:C3000')
-				cell_Dia_list = wks.range('D6:D1000')
-
-				for i in range(len(cell_ID_list)):
-					if cell_ID_list[i].value != '':
-						Cell_Date.append(cell_Date_list[i].value)
-						Cell_ID.append(cell_ID_list[i].value)
-						Cell_Dia.append(cell_Dia_list[i].value)
-					else:
-						break
-
-				if len(Cell_ID) == 0 :
-					await msg.channel.send("정산한 다이야가 없습니다.", tts=False)
-				else:
-					result = wks.acell('F2').value
-
-					information = ''
-					for i in range(len(Cell_ID)):
-						information += Cell_Date[i] + '  :  ' + str(Cell_Dia[i]) + ' 정산!\n'
-
-					#await client.get_channel(channel).send(SearchID + '님이 분배해야할 다이야는 ' + result + ' 다이야 입니다.', tts=False)
-					embed = discord.Embed(
-							title = "----- 정 산 금 -----",
-							description= '총 '+ result + ' 다이야',
-							color=0xff00ff
-							)
-					embed.add_field(
-							name="----- 정산내역 -----",
-							value=information,
-							inline = False
-							)
-					await client.get_channel(channel).send(embed=embed, tts=False)
-					wks.update_acell('E2', "")
-
-			################ 지원내역 ################ 
-			
-			if message.content.startswith('!지원내역'):
-				SearchID = hello[6:]
-				gc = gspread.authorize(credentials)
-				wks = gc.open(basicSetting[12]).worksheet("지원내역")
-
-				Cell_ID = []
-				Cell_Dia = []
-				Cell_Date = []
-				Cell_Cus = []
-
-
-				i = 0
-
-				wks.update_acell('E2', SearchID)
-
-				cell_Date_list = wks.range('B6:B3000')
-				cell_ID_list = wks.range('C6:C3000')
-				cell_Dia_list = wks.range('D6:D1000')
-				cell_Cus_list = wks.range('E6:E1000')
-
-				for i in range(len(cell_ID_list)):
-					if cell_ID_list[i].value != '':
-						Cell_Date.append(cell_Date_list[i].value)
-						Cell_ID.append(cell_ID_list[i].value)
-						Cell_Dia.append(cell_Dia_list[i].value)
-						Cell_Cus.append(cell_Cus_list[i].value)
-					else:
-						break
-
-				if len(Cell_ID) == 0 :
-					await msg.channel.send("지원 받은 다이야가 없습니다.", tts=False)
-				else:
-					result = wks.acell('F2').value
-
-					information = ''
-					for i in range(len(Cell_ID)):
-						information += Cell_Date[i] + '  :  ' + str(Cell_Dia[i]) + '  ' + Cell_Cus[i] +' 지원!\n'
-
-					embed = discord.Embed(
-							title = "----- 지 원 금 -----",
-							description= '총 '+ result + ' 다이야',
-							color=0xff00ff
-							)
-					embed.add_field(
-							name="----- 지원내역 -----",
-							value=information,
-							inline = False
-							)
-					await client.get_channel(channel).send(embed=embed, tts=False)
-					wks.update_acell('E2', "")
-			'''
 	client.loop.create_task(task())
 	try:
 		client.loop.run_until_complete(client.start(access_token))
