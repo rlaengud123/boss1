@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 
-################ V2 #####################
+################ Server V10 #####################
 
 import os
 import sys
@@ -117,7 +117,9 @@ def init():
 	global credentials #정산
 	
 	global regenembed
+	global command
 
+	command = []
 	tmp_bossData = []
 	tmp_fixed_bossData = []
 	FixedBossDateData = []
@@ -130,6 +132,11 @@ def init():
 	file_data1 = base64.b64decode(inidata.content)
 	file_data1 = file_data1.decode('utf-8')
 	inputData = file_data1.split('\n')
+
+	command_inidata = repo.get_contents("command.ini")
+	file_data4 = base64.b64decode(command_inidata.content)
+	file_data4 = file_data4.decode('utf-8')
+	command_inputData = file_data4.split('\n')
 	
 	boss_inidata = repo.get_contents("boss.ini")
 	file_data3 = base64.b64decode(boss_inidata.content)
@@ -153,6 +160,9 @@ def init():
 
 	for i in range(inputData.count('\r')):
 		inputData.remove('\r')
+
+	for i in range(command_inputData.count('\r')):
+		command_inputData.remove('\r')
 		
 	for i in range(boss_inputData.count('\r')):
 		boss_inputData.remove('\r')
@@ -160,9 +170,11 @@ def init():
 	for i in range(fixed_inputData.count('\r')):
 		fixed_inputData.remove('\r')
 
+	del(command_inputData[0])
 	del(boss_inputData[0])
 	del(fixed_inputData[0])
-		
+	
+	############## 보탐봇 초기 설정 리스트 #####################
 	basicSetting.append(inputData[0][11:])     #basicSetting[0] : timezone
 	basicSetting.append(inputData[5][15:])     #basicSetting[1] : before_alert
 	basicSetting.append(inputData[7][10:])     #basicSetting[2] : mungChk
@@ -180,6 +192,10 @@ def init():
 	basicSetting.append(inputData[13][12:])    #basicSetting[14] : 시트 이름
 	basicSetting.append(inputData[14][12:])    #basicSetting[15] : 입력 셀
 	basicSetting.append(inputData[15][13:])    #basicSetting[16] : 출력 셀
+
+	############## 보탐봇 명령어 리스트 #####################
+	for i in range(len(command_inputData)):
+		command.append(command_inputData[i][12:].rstrip('\r'))     #command[0] ~ [22] : 명령어
 	
 	for i in range(len(basicSetting)):
 		basicSetting[i] = basicSetting[i].strip()
@@ -891,9 +907,9 @@ while True:
 					message = await msg.channel.fetch_message(msg.id)
 					##################################
 
-					if message.content.startswith('!사다리'):
+					if message.content.startswith(command[11]):
 						ladder = []
-						ladder = message.content[5:].split(" ")
+						ladder = message.content[len(command[11])+1:].split(" ")
 						num_cong = int(ladder[0])
 						del(ladder[0])
 						await LadderFunc(num_cong, ladder, msg.channel)
@@ -905,9 +921,9 @@ while True:
 
 					################ 정산확인 ################ 
 
-					if message.content.startswith('!정산 '):
+					if message.content.startswith(command[12]):
 						if basicSetting[10] !="" and basicSetting[12] !="" and basicSetting[14] !="" and basicSetting[15] !="" and basicSetting[16] !=""  :
-							SearchID = message.content[4:]
+							SearchID = message.content[len(command[12])+1:]
 							gc = gspread.authorize(credentials)
 							wks = gc.open(basicSetting[12]).worksheet(basicSetting[14])
 
@@ -925,7 +941,7 @@ while True:
 			
 			################ 텍스트 정보확인 ################ 
 
-			if message.content == '!채널확인':
+			if message.content == command[2]:
 				ch_information = ''
 				for i in range(len(channel_name)):
 					ch_information += '[' + channel_id[i] + '] ' + channel_name[i] + '\n'
@@ -954,11 +970,10 @@ while True:
 
 			################ 텍스트채널이동 ################ 
 
-			if message.content.startswith('!채널이동'):
+			if message.content.startswith(command[3]):
 				tmp_sayMessage1 = message.content
-				
 				for i in range(len(channel_name)):
-					if  channel_name[i] == str(tmp_sayMessage1[6:]):
+					if  channel_name[i] == str(tmp_sayMessage1[len(command[3])+1:]):
 						channel = int(channel_id[i])
 						
 				inidata_textCH = repo.get_contents("test_setting.ini")
@@ -1199,9 +1214,9 @@ while True:
 
 			################ 분배 결과 출력 ################ 
 
-			if message.content.startswith('!분배'):
+			if message.content.startswith(command[10]):
 				separate_money = []
-				separate_money = message.content[4:].split(" ")
+				separate_money = message.content[len(command[10])+1:].split(" ")
 				num_sep = int(separate_money[0])
 				cal_tax1 = math.ceil(float(separate_money[1])*0.05)
 				real_money = int(int(separate_money[1]) - cal_tax1)
@@ -1213,30 +1228,59 @@ while True:
 
 			################ 사다리 결과 출력 ################ 
 
-			if message.content.startswith('!사다리'):
+			if message.content.startswith(command[11]):
 				ladder = []
-				ladder = message.content[5:].split(" ")
+				ladder = message.content[len(command[11])+1:].split(" ")
 				num_cong = int(ladder[0])
 				del(ladder[0])
 				await LadderFunc(num_cong, ladder, client.get_channel(channel))
 				
 			################ 보탐봇 메뉴 출력 ################
 			
-			if message.content == '!메뉴':
+			if message.content == command[0]:
+				command_list = ''
+				command_list += command[1] + '\n'     #!설정확인
+				command_list += command[2] + '\n'     #!채널확인
+				command_list += command[3] + ' [채널명]\n'     #!채널이동
+				command_list += command[4] + '\n'     #!소환
+				command_list += command[5] + '\n'     #!불러오기
+				command_list += command[6] + '\n'     #!초기화
+				command_list += command[7] + '\n'     #!명치
+				command_list += command[8] + '\n'     #!재시작
+				command_list += command[9] + '\n'     #!미예약
+				command_list += command[10] + ' [인원] [금액]\n'     #!분배
+				command_list += command[11] + ' [뽑을인원수] [아이디1] [아이디2]...\n'     #!사다리
+				command_list += command[12] + ' [아이디]\n'     #!정산
+				command_list += command[13] + ' 또는 ' + command[14] + '0000, 00:00\n'     #!보스일괄
+				command_list += command[14] + '\n'     #!q
+				command_list += command[15] + ' [할말]\n'     #!v
+				command_list += command[16] + '\n'     #!리젠
+				command_list += command[17] + '\n'     #!현재시간
+				command_list += command[18] + '\n'     #!공지
+				command_list += command[18] + ' [공지내용]\n'     #!공지
+				command_list += command[18] + '삭제\n'     #!공지
+				command_list += command[19] + ' [할말]\n\n'     #!상태
+				command_list += command[20] + '\n'     #보스탐
+				command_list += command[21] + '\n'     #!보스탐
+				command_list += '[보스명]컷 또는 [보스명]컷 0000, 00:00\n'     
+				command_list += '[보스명]멍 또는 [보스명]멍 0000, 00:00\n'     
+				command_list += '[보스명]예상 또는 [보스명]예상 0000, 00:00\n' 
+				command_list += '[보스명]삭제\n'     
+				command_list += '[보스명]메모 [할말]\n'
 				embed = discord.Embed(
-						title = "----- 메뉴 -----",
-						description= '```!현재시간\n!채널확인\n!채널이동 [채널명]\n!소환\n!불러오기\n!초기화\n!재시작\n!명치\n!미예약\n!공지\n!공지 (할말)\n!공지삭제\n!상태 (할말)\n!분배 [인원] [금액]\n!사다리 [뽑을인원수] [아이디1] [아이디2] ...\n!보스일괄 00:00 또는 !보스일괄 0000\n!ㅂ,ㅃ,q\n\n[보스명]컷\n[보스명]컷 00:00 또는 [보스명]컷 0000\n[보스명]멍\n[보스명]멍 00:00 또는 [보스명]멍 0000\n[보스명]예상 00:00 또는 [보스명]예상 0000\n[보스명]메모 (할말)\n[보스명]삭제\n보스탐\n!보스탐\n!리젠```',
+						title = "----- 명령어 -----",
+						description= '```' + command_list + '```',
 						color=0xff00ff
 						)
 				embed.add_field(
 						name="----- 추가기능 -----",
-						value= '(보스명)컷/멍/예상  (할말) : 보스시간 입력 후 빈칸 두번!! 메모 가능'
+						value= '```[보스명]컷/멍/예상  [할말] : 보스시간 입력 후 빈칸 두번!! 메모 가능```'
 						)
-				await client.get_channel(channel).send(embed=embed, tts=False)
+				await client.get_channel(channel).send( embed=embed, tts=False)
 
 			################ 미예약 보스타임 출력 ################ 
 
-			if message.content == '!미예약':
+			if message.content == command[9]:
 				temp_bossTime2 = []
 				for i in range(bossNum):
 					if bossTimeString[i] == '99:99:99' :
@@ -1257,16 +1301,16 @@ while True:
 
 			################ 음성파일 생성 후 재생 ################ 			
 				
-			if message.content.startswith('!v') or message.content.startswith('!ㅍ') or message.content.startswith('!V'):
+			if message.content.startswith(command[15]) or message.content.startswith('!ㅍ') or message.content.startswith('!V'):
 				tmp_sayMessage = message.content
-				sayMessage = tmp_sayMessage[3:]
+				sayMessage = tmp_sayMessage[len(command[15])+1:]
 				await MakeSound(message.author.display_name +'님이.' + sayMessage, './sound/say')
 				await client.get_channel(channel).send("```< " + msg.author.display_name + " >님이 \"" + sayMessage + "\"```", tts=False)
 				await PlaySound(voice_client1, './sound/say.mp3')
 
 			################ 보탐봇 재시작 ################ 
 
-			if message.content == '!재시작' :
+			if message.content == command[8] :
 				if basicSetting[2] != '0':
 					for i in range(bossNum):
 						if bossMungFlag[i] == True:
@@ -1292,7 +1336,7 @@ while True:
 				
 			################ 보탐봇 음성채널 소환 ################ 
 
-			if message.content == '!소환':
+			if message.content == command[4]:
 				if message.author.voice == None:
 					await client.get_channel(channel).send('음성채널에 먼저 들어가주세요.', tts=False)
 				else:
@@ -1335,7 +1379,7 @@ while True:
 			
 			################ 저장된 정보 초기화 ################
 						
-			if message.content == '!초기화' :
+			if message.content == command[6] :
 				basicSetting = []
 				bossData = []
 				fixed_bossData = []
@@ -1369,9 +1413,9 @@ while True:
 
 			################ 보스타임 일괄 설정 ################
 			
-			if message.content.startswith('!보스일괄'):
+			if message.content.startswith(command[13]):
 				for i in range(bossNum):
-					tmp_msg = '!보스일괄'
+					tmp_msg = command[13]
 					if len(hello) > len(tmp_msg) + 3 :
 						if hello.find(':') != -1 :
 							chkpos = hello.find(':')
@@ -1422,8 +1466,9 @@ while True:
 
 			################ 보탐봇 기본 설정확인 ################ 
 
-			if message.content == '!설정확인':		
-				setting_val = '음성채널 : ' + client.get_channel(basicSetting[6]).name + '\n'
+			if message.content == command[1]:		
+				setting_val = '보탐봇버전 : Server Ver.10 (2019. 12. 09.)\n'
+				setting_val += '음성채널 : ' + client.get_channel(basicSetting[6]).name + '\n'
 				setting_val += '텍스트채널 : ' + client.get_channel(basicSetting[7]).name +'\n'
 				if basicSetting[8] != "" :
 					setting_val += '사다리채널 : ' + client.get_channel(int(basicSetting[8])).name + '\n'
@@ -1441,7 +1486,7 @@ while True:
 
 			################ my_bot.db에 저장된 보스타임 불러오기 ################
 
-			if message.content == '!불러오기' :
+			if message.content == command[5] :
 				await dbLoad()
 
 				if LoadChk == 0:
@@ -1451,7 +1496,7 @@ while True:
 			
 			################ 가장 근접한 보스타임 출력 ################ 
 			
-			if message.content == '!ㅂ' or message.content == '!q' or message.content == '!ㅃ' or message.content == '!Q':
+			if message.content == '!ㅂ' or message.content == command[14] or message.content == '!ㅃ' or message.content == '!Q':
 				
 				checkTime = datetime.datetime.now() + datetime.timedelta(days=1, hours = int(basicSetting[0]))
 				
@@ -1528,7 +1573,7 @@ while True:
 
 			################ 보스타임 출력 ################ 
 
-			if message.content == '보스탐' or message.content == '/1' or message.content == '/보스':
+			if message.content == command[20] or message.content == '/1' or message.content == '/보스':
 				
 				datelist = []
 				datelist2 = []
@@ -1621,7 +1666,7 @@ while True:
 
 			################ 보스타임 출력(고정보스포함) ################ 
 
-			if message.content == '!보스탐':
+			if message.content == command[21]:
 
 				datelist = []
 				datelist2 = []
@@ -1730,18 +1775,21 @@ while True:
 
 			################ 현재시간 확인 ################ 
 
-			if message.content == '!현재시간' :
-				now3 = datetime.datetime.now() + datetime.timedelta(hours = int(basicSetting[0]))
-				await client.get_channel(channel).send(now3.strftime('%Y-%m-%d') + '   ' + now3.strftime('%H:%M:%S'), tts=False)
+			if message.content == command[17] :
+				embed = discord.Embed(
+					title = '현재시간은 ' + datetime.datetime.now().strftime('%H') + '시 ' + datetime.datetime.now().strftime('%M') + '분 ' + datetime.datetime.now().strftime('%S')+ '초 입니다.',
+					color=0xff00ff
+					)
+				await client.get_channel(channel).send( embed=embed, tts=False)
 
 			################ 리젠시간 출력 ################
 			
-			if message.content == '!리젠' :
+			if message.content == command[16] :
 				await client.get_channel(channel).send(embed=regenembed, tts=False)
 
 			################ 명존쎄 ################ 
 
-			if message.content == '!명치':
+			if message.content == command[7]:
 				await client.get_channel(channel).send( '< 보탐봇 명치 맞고 숨 고르기 중! 잠시만요! >', tts=False)
 				for i in range(bossNum):
 					if bossMungFlag[i] == True:
@@ -1758,15 +1806,15 @@ while True:
 
 			################ 상태메세지변경 ################ 
 
-			if message.content.startswith('!상태 '):
+			if message.content.startswith(command[19]):
 				tmp_sayMessage = message.content
-				sayMessage = tmp_sayMessage[4:]
+				sayMessage = tmp_sayMessage[len(command[19])+1:]
 				await client.change_presence(status=discord.Status.dnd, activity=discord.Game(name=sayMessage, type=1), afk = False)
 				await client.get_channel(channel).send( '< 상태메세지 변경완료 >', tts=False)
 
 			################ 공지확인, 입력 및 삭제 ################ 
 
-			if message.content == '!공지':
+			if message.content == command[18]:
 				notice_initdata = repo.get_contents("notice.ini")
 				notice = base64.b64decode(notice_initdata.content)
 				notice = notice.decode('utf-8')
@@ -1782,14 +1830,14 @@ while True:
 							)
 				await msg.channel.send(embed=embed, tts=False)
 
-			if message.content.startswith('!공지 '):
+			if message.content.startswith(command[18] + ' '):
 				tmp_sayMessage = message.content
-				sayMessage = tmp_sayMessage[4:]
+				sayMessage = tmp_sayMessage[len(command[18])+1:]
 				contents = repo.get_contents("notice.ini")
 				repo.update_file(contents.path, "notice 등록", sayMessage, contents.sha)
 				await client.get_channel(channel).send( '< 공지 등록완료 >', tts=False)
 			
-			if message.content == '!공지삭제':
+			if message.content == command[18] + '삭제':
 				contents = repo.get_contents("notice.ini")
 				repo.update_file(contents.path, "notice 삭제", '', contents.sha)
 				await client.get_channel(channel).send( '< 공지 삭제완료 >', tts=False)
@@ -1797,9 +1845,9 @@ while True:
 
 			################ 정산확인 ################ 
 
-			if message.content.startswith('!정산 '):
+			if message.content.startswith(command[12]):
 				if basicSetting[10] !="" and basicSetting[12] !="" and basicSetting[14] !="" and basicSetting[15] !="" and basicSetting[16] !=""  :
-					SearchID = hello[4:]
+					SearchID = hello[len(command[12])+1:]
 					gc = gspread.authorize(credentials)
 					wks = gc.open(basicSetting[12]).worksheet(basicSetting[14])
 
